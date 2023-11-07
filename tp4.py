@@ -41,22 +41,22 @@ class DB:
         self.cursor.execute(query, (cpf, nome, telefone, cep, numero, complemento, cpf_func))
         self.conn.commit()
 
-    def inserir_5_clientes(tupla):
-    for i in range(5):
-        db.inserir_cliente(tupla.cpf[i], tupla.nome[i], tupla.telefone, cep, numero, complemento, cpf_func)
+    def inserir_5_clientes(self, tuplas_clientes):
+        for tupla in tuplas_clientes:
+            self.inserir_cliente(*tupla)
 
     def listar_clientes(self):
         query = "SELECT * FROM Cliente;"
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def pesquisar_clinte(self,cpf):
-        query = "SELECT * FROM Funcionario WHERE cpf=?;"
-        self.cursor.execute(query,(cpf,))
+    def pesquisar_cliente(self, cpf):
+        query = "SELECT * FROM Cliente WHERE CPF = ?;"
+        self.cursor.execute(query, (cpf,))
         return self.cursor.fetchall()
 
-    def pesquisar_nomes_semelhantes(self,nome):
-        query = "SELECT * FROM Funcionario WHERE nome LIKE ?;"
+    def pesquisar_nomes_semelhantes(self, nome):
+        query = "SELECT * FROM Cliente WHERE nome LIKE ?;"
         self.cursor.execute(query, ('%' + nome + '%',))
         return self.cursor.fetchall()
 
@@ -66,7 +66,7 @@ class DB:
         self.conn.commit()
 
     def deletar_cliente(self, cpf):
-        query = "DELETE FROM Cliente WHERE CPF=?;"
+        query = "DELETE FROM Cliente WHERE CPF = ?;"
         self.cursor.execute(query, (cpf,))
         self.conn.commit()
 
@@ -80,18 +80,18 @@ class DB:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def pesquisar_funcionarios(self,cpf):
-        query = "SELECT * FROM Funcionario WHERE cpf=?;"
-        self.cursor.execute(query,(cpf,))
+    def pesquisar_funcionarios(self, cpf):
+        query = "SELECT * FROM Funcionario WHERE cpf = ?;"
+        self.cursor.execute(query, (cpf,))
         return self.cursor.fetchall()
 
     def atualizar_funcionario(self, cpf, nome, telefone, cep, numero, complemento, cargo, salario):
-        query = "UPDATE Funcionario SET nome=?, telefone=?, cep=?, numero=?, complemento=?, cargo=?, salario=? WHERE cpf=?;"
+        query = "UPDATE Funcionario SET nome=?, telefone=?, cep=?, numero=?, complemento=?, cargo=?, salario=? WHERE cpf = ?;"
         self.cursor.execute(query, (nome, telefone, cep, numero, complemento, cargo, salario, cpf))
         self.conn.commit()
 
     def deletar_funcionario(self, cpf):
-        query = "DELETE FROM Funcionario WHERE cpf=?;"
+        query = "DELETE FROM Funcionario WHERE cpf = ?;"
         self.cursor.execute(query, (cpf,))
         self.conn.commit()
 
@@ -99,28 +99,23 @@ class DB:
         if self.conn:
             self.conn.close()
 
-    def main():
+def main():
     nome_db = 'tp4.db'
     db = DB(nome_db)
     db.criar_tabelas()
 
-    # Inserir 1 cliente
-    cliente1=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
+    # Inserir um cliente
+    db.inserir_cliente('12345', 'João Paulo', '1234567890', '12345', '1A', 'Apto 101', '10001')
+
     # Inserir 5 clientes
-    cliente2=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente3=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente4=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente5=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente6=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente7=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente8=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente9=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente10=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    cliente11=('1', 'Cliente 1', '1234567890', '12345', '1A', 'Apto 101', 1)
-    lote1=(cliente2,cliente3,cliente4,cliente5,cliente6)
-    lote2=(cliente7,cliente8,cliente9,cliente10,cliente11)
-    db.inserir_5_clientes(lote1)
-    db.inserir_5_clientes(lote2)
+    tuplas_clientes = [
+        ('67890', 'Pedro Henrique', '9876543210', '54321', '2B', 'Apto 102', '10001'),
+        ('54321', 'João Pedro', '5555555555', '54321', '3C', 'Apto 103', '10002'),
+        ('99999', 'Maria Socorro', '1111111111', '54321', '4D', 'Apto 104', '10001'),
+        ('88888', 'Maria do Socorro', '2222222222', '54321', '5E', 'Apto 105', '10002'),
+        ('77777', 'Maria João Pedro', '3333333333', '54321', '6F', 'Apto 106', '10002')
+    ]
+    db.inserir_5_clientes(tuplas_clientes)
 
     # Listar todos os clientes
     clientes = db.listar_clientes()
@@ -128,7 +123,7 @@ class DB:
     for cliente in clientes:
         print(cliente)
 
-    # Pesquisar clientes pelo CPF
+    # Pesquisar cliente pelo CPF
     cpf_pesquisado = '12345'
     resultado_pesquisa = db.pesquisar_cliente(cpf_pesquisado)
     if resultado_pesquisa:
@@ -139,7 +134,7 @@ class DB:
         print(f"Nenhum cliente encontrado com CPF {cpf_pesquisado}.")
 
     # Pesquisar clientes com nomes semelhantes
-    nome_pesquisado = 'Cliente'
+    nome_pesquisado = 'Pedro'
     resultado_pesquisa_nome = db.pesquisar_nomes_semelhantes(nome_pesquisado)
     if resultado_pesquisa_nome:
         print(f"Clientes encontrados com nome semelhante a '{nome_pesquisado}':")
@@ -149,34 +144,23 @@ class DB:
         print(f"Nenhum cliente encontrado com nome semelhante a '{nome_pesquisado}'.")
 
     # Atualizar um cliente
-    db.atualizar_cliente('12345', 'Cliente Atualizado', '9876543210', '54321', '2B', 'Apto 102', 2)
-
-    # Listar clientes novamente após a atualização
-    clientes = db.listar_clientes()
-    print("\nClientes após atualização:")
-    for cliente in clientes:
-        print(cliente)
+    db.atualizar_cliente('12345', 'João Paulo', '1234567890', '12345', '1A', 'Apto 101', '10002')
 
     # Deletar um cliente
-    db.deletar_cliente('12345')
+    db.deletar_cliente('67890')
 
-    # Listar clientes após a exclusão
-    clientes = db.listar_clientes()
-    print("\nClientes após exclusão:")
-    for cliente in clientes
-
-    # Inserir funcionário
-    db.inserir_funcionario(1, 'Funcionário 1', '1234567890', '12345', '1A', 'Apto 101', 'Cargo 1', 5000.00)
-    db.inserir_funcionario(2, 'Funcionário 2', '0234567891', '12345', '1A', 'Apto 102', 'Cargo 2', 10000.00)
+    # Inserir dois funcionários
+    db.inserir_funcionario('10001', 'Marcos Aurélio', '1234567890', '12345', '1A', 'Apto 101', 'Cargo 1', 5000.00)
+    db.inserir_funcionario('10002', 'Elizabete Apóstrofe', '9876543210', '54321', '2B', 'Apto 102', 'Cargo 2', 6000.00)
 
     # Listar funcionários
     funcionarios = db.listar_funcionarios()
-    print("\nFuncionários:")
+    print("Funcionários:")
     for funcionario in funcionarios:
         print(funcionario)
 
-    # Pesquisar funcionários pelo CPF
-    cpf_funcionario_pesquisado = 1
+    # Pesquisar funcionário pelo CPF
+    cpf_funcionario_pesquisado = '10001'
     resultado_pesquisa_funcionario = db.pesquisar_funcionarios(cpf_funcionario_pesquisado)
     if resultado_pesquisa_funcionario:
         print(f"Funcionário encontrado com CPF {cpf_funcionario_pesquisado}:")
@@ -186,21 +170,10 @@ class DB:
         print(f"Nenhum funcionário encontrado com CPF {cpf_funcionario_pesquisado}.")
 
     # Atualizar um funcionário
-    db.atualizar_funcionario(1, 'Funcionário Atualizado', '9876543210', '54321', '2B', 'Apto 102', 'Cargo 2', 6000.00)
-
-    # Listar funcionários novamente após a atualização
-    funcionarios = db.listar_funcionarios()
-    print("\nFuncionários após atualização:")
-    for funcionario in funcionarios:
-        print(funcionario)
+    db.atualizar_funcionario('10001', 'Marcos Aurélio', '1234567890', '12345', '1A', 'Apto 103', 'Cargo 1', 7000.00)
 
     # Deletar um funcionário
-    db.deletar_funcionario(1)
-
-    # Listar funcionários após a exclusão
-    funcionarios = db.listar_funcionarios()
-    print("\nFuncionários após exclusão:")
-    for funcionario in funcionarios
+    db.deletar_funcionario('10002')
 
     db.fechar_conexao()
 
